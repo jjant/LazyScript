@@ -6,19 +6,6 @@ import Control.Applicative
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
-runParser :: Parser a -> String -> a
-runParser m s =
-  case parse m s of
-    [(res, [])] -> res
-    [(_, rs)]   -> error "Parser did not consume entire string"
-    _           -> error "Parser error"
-
-item :: Parser Char
-item = Parser $ \s ->
-  case s of
-    []    -> []
-    (c:cs)  -> [(c, cs)]
-
 instance Functor Parser where
   fmap f (Parser cs) = Parser $ \s -> [(f a, b) | (a, b) <- cs s]
 
@@ -40,12 +27,128 @@ instance MonadPlus Parser where
   mzero = Parser (const [])
   mplus (Parser p) (Parser q) = Parser $ \cs -> p cs ++ p cs
 
-parser2 :: Parser Int
-parser2 = return 2
+runParser :: Parser a -> String -> a
+runParser m s =
+  case parse m s of
+    [(res, [])] -> res
+    [(_, rs)]   -> error "Parser did not consume entire string"
+    []          -> error "No matches"
+    _           -> error "Parser error"
 
--- Paramet
-data FunctionDecl =
-  Function [String] deriving (Eq, Show)
+item :: Parser Char
+item = Parser $ \s ->
+  case s of
+    []    -> []
+    (c:cs)  -> [(c, cs)]
+
+sat :: (Char -> Bool) -> Parser Char
+sat p = item >>= (\c -> if p c then return c else mzero)
+
+char :: Char -> Parser Char
+char c = sat (== c)
+
+string :: [Char] -> Parser [Char]
+string [] = pure []
+string (x:xs) = do
+  char x
+  string xs
+  return $ x:xs
+
+parseArrow = string "=>"
+
+sepBy :: Parser a -> Parser b -> Parser [a]
+sepBy p sep = (p `sepBy1` sep) <|> pure []
+
+sepBy1 :: Parser a -> Parser b -> Parser [a]
+sepBy1 p sep = (:) <$> p <*> many (sep *> p)
+
+alpha :: Parser Char
+alpha = foldl (<|>) mzero (char <$> ['a'..'z']++['A'..'Z'])
+
+digit :: Parser Char
+digit = foldl (<|>) mzero (char <$>['0'..'9'])
+
+alphaNum :: Parser Char
+alphaNum = digit <|> alpha
+
+varName :: Parser [Char]
+varName = many alpha
+
+parseNumber :: Parser JsValue
+parseNumber = (JsNumber . read <$> some digit)
+
+parseString :: Parser JsValue
+parseString = do
+  char '"'
+  a <- many alphaNum
+  char '"'
+  return (JsString a)
+
+parseArray :: Parser JsValue
+parseArray = do
+  char '['
+  elems <- parseJsExpression `sepBy` char ','
+  char ']'
+  return (JsArray elems)
+
+parseObject :: Parser JsValue
+parseObject = do
+  char '{'
+  kvs <- many keyValuePair
+  char '}'
+  return (JsObject kvs)
+
+keyValuePair :: Parser (String, JsValue)
+keyValuePair = do
+  k <- varName
+  char ':'
+  v <- parseJsValue
+  return (k,v)
+
+parseJsValue :: Parser JsValue
+parseJsValue =
+  parseObject <|>
+  parseArray <|>
+  parseNumber <|>
+  parseString
+
+spread :: Parser JsExpression
+spread = Spread <$> (string "..." >> parseJsExpression)
+
+parseFuncCall :: Parser JsExpression
+parseFuncCall = do
+  funcName <- varName
+  char '('
+  params <- parseJsValue `sepBy` (char ',')
+  char ')'
+  return $ JsFuncCall funcName params
+
+parseJsExpression :: Parser JsExpression
+parseJsExpression =
+  (Value <$> parseJsValue) <|>
+  spread <|>
+  parseFuncCall
+
+data JsValue =
+  JsNumber Int
+  | JsString String
+  | JsObject [(String, JsValue)]
+  | JsArray [JsExpression]
+  deriving (Show)
+
+data JsExpression =
+  Value JsValue
+  | Spread JsExpression
+  | JsFuncCall String [JsValue]
+  deriving (Show)
+
+
+objString :: String
+objString = "{hola:{}}"
+
+arrayString :: String
+arrayString = "[...a(),1,2,3]"
 
 main = do
-  putStrLn $ show (parse parser2 "Input")
+  putStrLn $ show (runParser parseJsExpression objString)
+  putStrLn $ show (runParser parseArray arrayString)
