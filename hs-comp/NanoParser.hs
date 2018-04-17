@@ -1,8 +1,8 @@
 module NanoParser where
 
-import Data.Char
-import Control.Monad
-import Control.Applicative
+import           Control.Applicative
+import           Control.Monad
+import           Data.Char
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
@@ -38,8 +38,8 @@ runParser m s =
 item :: Parser Char
 item = Parser $ \s ->
   case s of
-    []    -> []
-    (c:cs)  -> [(c, cs)]
+    []     -> []
+    (c:cs) -> [(c, cs)]
 
 sat :: (Char -> Bool) -> Parser Char
 sat p = item >>= (\c -> if p c then return c else mzero)
