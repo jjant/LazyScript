@@ -24,9 +24,11 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     { lazyScriptCode =
-        """const a = [1, ...a];
+        """const a = [1].concat(a);
 
-const constantlyGreet = a.map(_ => IO.putStrLn("Hi!"));
+const always = a => _ => a;
+
+const constantlyGreet = a.map(always(IO.putStrLn("Hi!")));
 
 const main = constantlyGreet;
 """
@@ -168,6 +170,7 @@ textareaStyle =
     , "border" => "1px solid #db4d3f"
     , "padding" => "12px"
     , "outline" => "none"
+    , "background" => "transparent"
     ]
 
 
@@ -196,7 +199,7 @@ content model =
                     ]
                 , label [ style labelStyle ]
                     [ textarea
-                        [ style (textareaStyle ++ [ "outline" => "none" ])
+                        [ style textareaStyle
                         , readonly True
                         , value model.compiledCode
                         ]

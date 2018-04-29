@@ -122,7 +122,7 @@ parseFunc = do
   char ')'
   string "=>"
   char '{'
-  exps <- parseJsExpression `sepBy` (char '\n') 
+  exps <- parseJsExpression `sepBy` (char '\n')
   char '}'
   return $ JsFunc paramNames exps
 
@@ -163,6 +163,7 @@ arrayString = "[...a(),1,2,3]"
 
 funcString :: String
 funcString = "(a)=>{2}"
+
 main = do
   putStrLn $ show (runParser parseJsExpression objString)
   putStrLn $ show (runParser parseArray arrayString)
