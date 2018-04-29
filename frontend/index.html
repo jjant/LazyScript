@@ -13307,7 +13307,8 @@ var _user$project$Main$compileCodeCmd = function (lazyScriptCode) {
 	return A2(
 		_elm_lang$http$Http$send,
 		_user$project$Main$NewCompiledCode,
-		_elm_lang$http$Http$getString('http://localhost:3000/code='));
+		_elm_lang$http$Http$getString(
+			A2(_elm_lang$core$Basics_ops['++'], 'http://localhost:8080/compile?code=', lazyScriptCode)));
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {

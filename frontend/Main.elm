@@ -61,7 +61,9 @@ update msg model =
 
 compileCodeCmd : String -> Cmd Msg
 compileCodeCmd lazyScriptCode =
-    Http.getString "http://localhost:3000/code="
+    "http://localhost:8080/compile?code="
+        ++ lazyScriptCode
+        |> Http.getString
         |> Http.send NewCompiledCode
 
 
