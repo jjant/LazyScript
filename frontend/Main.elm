@@ -23,7 +23,13 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    { lazyScriptCode = "const a = [1, ...a];"
+    { lazyScriptCode =
+        """const a = [1, ...a];
+
+const constantlyGreet = a.map(_ => IO.putStrLn("Hi!"));
+
+const main = constantlyGreet;
+"""
     , compiledCode = ""
     }
         ! []
@@ -38,7 +44,8 @@ update msg model =
         NewCompiledCode response ->
             case response of
                 Err e ->
-                    model ! []
+                    -- TODO: Change later.
+                    { model | compiledCode = "Something wrong happened while compiling :(." } ! []
 
                 Ok code ->
                     { model | compiledCode = code } ! []
@@ -77,15 +84,13 @@ topLevelStyle =
     , "width" => "100%"
     , "height" => "100vh"
     , "margin" => "0 auto"
+    , "display" => "flex"
+    , "flex-direction" => "column"
     ]
 
 
 bgColor =
-    "#F5F5F5"
-
-
-textareaColor =
-    "#F9F3F5"
+    "#f6f4f4"
 
 
 main =
@@ -125,7 +130,7 @@ header =
 
 contentStyle =
     [ "margin" => "30px auto 0"
-    , "max-width" => "1050px"
+    , "max-width" => "1150px"
     , "width" => "100%"
     ]
 
@@ -142,9 +147,7 @@ labelStyle =
     [ "display" => "flex"
     , "flex-direction" => "column"
     , "width" => "100%"
-    , "max-width" => "450px"
-    , "background" => "#B7B6C2"
-    , "padding" => "20px"
+    , "max-width" => "550px"
     , "border-radius" => "5px"
     ]
 
@@ -153,68 +156,157 @@ textareaStyle =
     [ "height" => "325px"
     , "min-height" => "325px"
     , "max-height" => "325px"
-    , "width" => "100%"
-    , "background" => textareaColor
+    , "width" => "calc(100% - 26px)"
+    , "min-width" => "calc(100% - 26px)"
+    , "max-width" => "calc(100% - 26px)"
+    , "resize" => "none"
     , "border-radius" => "4px"
-    , "font-size" => "20px"
+    , "font-size" => "14px"
     , "color" => "#333"
-    , "padding" => "10px"
     , "margin-bottom" => "10px"
+    , "cursor" => "text"
+    , "border" => "1px solid #db4d3f"
+    , "padding" => "12px"
+    , "outline" => "none"
     ]
 
 
 content : Model -> Html Msg
 content model =
-    div [ style contentStyle ]
-        [ div [ style mainStyle ]
-            [ label [ style labelStyle ]
-                [ textarea
-                    [ style textareaStyle
-                    , onInput NewLazyScriptCode
-                    , value model.lazyScriptCode
+    div [ style [ "display" => "flex", "flex-direction" => "column", "flex" => "1" ] ]
+        [ div [ style contentStyle ]
+            [ div [ style mainStyle ]
+                [ label [ style labelStyle ]
+                    [ code
+                        [ style textareaStyle
+                        , onInput NewLazyScriptCode
+                        , value model.lazyScriptCode
+                        , contenteditable True
+                        ]
+                        (model.lazyScriptCode
+                            |> String.lines
+                            |> List.map
+                                (\line ->
+                                    if String.isEmpty line then
+                                        br [] []
+                                    else
+                                        span [ style [ "display" => "block" ] ] [ text line ]
+                                )
+                        )
                     ]
-                    []
-                , span [] [ text "LazyScript code" ]
-                ]
-            , label [ style labelStyle ]
-                [ textarea
-                    [ style (textareaStyle ++ [ "outline" => "none" ])
-                    , readonly True
-                    , value model.compiledCode
+                , label [ style labelStyle ]
+                    [ textarea
+                        [ style (textareaStyle ++ [ "outline" => "none" ])
+                        , readonly True
+                        , value model.compiledCode
+                        ]
+                        []
                     ]
-                    []
-                , span [] [ text "Compiled code" ]
                 ]
+            , div [ style [ "display" => "flex", "justify-content" => "center" ] ]
+                ([ compileButton, docsButton ]
+                    |> List.map buttonContainer
+                )
             ]
-        , compileButton
         , languageDescription
         ]
 
 
+buttonContainerStyle =
+    [ "margin" => "32px 8px 16px"
+    , "width" => "130px"
+    , "display" => "flex"
+    ]
+
+
+buttonContainer : Html msg -> Html msg
+buttonContainer el =
+    div [ style buttonContainerStyle ] [ el ]
+
+
 compileButtonStyle =
-    [ "width" => "100px"
-    , "height" => "40px"
-    , "display" => "block"
-    , "border-radius" => "2px"
-    , "font-size" => "16px"
-    , "margin" => "32px auto 16px"
+    [ "display" => "block"
+    , "cursor" => "pointer"
+    , "border" => "1px solid #db4d3f"
+    , "border-radius" => "3px"
+    , "font-size" => "14px"
+    , "background" => "#db4d3f"
+    , "color" => "#fff"
     , "outline" => "none"
+    , "padding" => "10px 16px"
+    , "margin-left" => "auto"
     ]
 
 
 compileButton : Html Msg
 compileButton =
-    button
+    a
         [ style compileButtonStyle
         , onClick Compile
         ]
-        [ text "Compile" ]
+        [ text "COMPILE" ]
+
+
+docsButtonStyle =
+    [ "display" => "block"
+    , "cursor" => "pointer"
+    , "border" => "1px solid #db4d3f"
+    , "border-radius" => "3px"
+    , "font-size" => "14px"
+    , "background" => "transparent"
+    , "color" => "#db4d3f"
+    , "outline" => "none"
+    , "padding" => "10px 16px"
+    , "margin-right" => "auto"
+    ]
+
+
+docsButton : Html msg
+docsButton =
+    a [ style docsButtonStyle ] [ text "QUICK START" ]
 
 
 languageDescription : Html msg
 languageDescription =
-    div []
-        [ text "LazyScript is a dynamic, lazily evaluated programming language featuring pure IO." ]
+    div [ style [ "background" => "white", "flex" => "1", "padding-top" => "36px" ] ]
+        [ div [ style [ "display" => "flex", "justify-content" => "space-around" ] ] (List.map (uncurry description) descriptionItems)
+        ]
+
+
+descriptionItems =
+    [ ( "Flexible & Fun", "Make websites, animations, games, servers, cli tools, and more! Take a look at these examples to get inspired." )
+    , ( "Pure and lazy", "LazyScript is a dynamic, lazily evaluated programming language featuring pure IO." )
+    , ( "Easy JavaScript interop", "Use packages from NPM/Yarn with minimum hassle, or even drop in a snippet of raw JavaScript while you're learning!" )
+    ]
+
+
+description : String -> String -> Html msg
+description title body =
+    div
+        [ style
+            [ "display" => "flex"
+            , "width" => "350px"
+            , "flex-direction" => "column"
+            , "text-align" => "center"
+            ]
+        ]
+        [ span
+            [ style
+                [ "color" => "rgb(219, 77, 63)"
+                , "font-size" => "22px"
+                , "margin-bottom" => "12px"
+                ]
+            ]
+            [ text title ]
+        , span
+            [ style
+                [ "font-size" => "18px"
+                , "color" => "rgb(57, 57, 57)"
+                , "line-height" => "30px"
+                ]
+            ]
+            [ text body ]
+        ]
 
 
 footerStyles =
@@ -232,6 +324,7 @@ footerStyles =
 
 footerLinkStyle =
     [ "color" => "#dedede"
+    , "text-decoration" => "none"
     ]
 
 
@@ -240,12 +333,13 @@ footer =
     div [ style footerStyles ]
         (footerLinks
             |> List.map (\( url, linkText ) -> a [ href url, style footerLinkStyle ] [ text linkText ])
-            |> List.intersperse (text " | ")
+            |> List.intersperse (span [ style [ "margin" => "0 10px" ] ] [ text "|" ])
         )
 
 
 footerLinks : List ( String, String )
 footerLinks =
-    [ ( "https://github.com/jjant/lazyscript", "Repo" )
+    [ ( "https://github.com/jjant/lazyscript/docs", "Docs" )
+    , ( "https://github.com/jjant/lazyscript", "Repo" )
     , ( "https://github.com/jjant", "GitHub" )
     ]
