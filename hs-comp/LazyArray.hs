@@ -1,7 +1,7 @@
 module LazyArray where
 
 import           Data.List
-import           NanoParser (parseArray, runParser)
+import           NanoParser (parseArray, runParser, JsValue(..), JsExpression(..))
 
 --makeLazy :: Expression -> Expression
 --makeLazy (Spread exp) = FuncCall exp
@@ -32,10 +32,14 @@ import           NanoParser (parseArray, runParser)
 --testCases :: String
 --testCases =
 --  "console.log(access(10, a).toString() + ' === 2');\nconsole.log(access(0, a).toString() + ' === 1');"
+
+mkThunk :: JsExpression -> JsExpression
+mkThunk val = JsFunc [] [val]
+
 lazifyExpression :: JsExpression -> JsExpression
 lazifyExpression exp =
   case exp of
-    Value val -> lazifyValue val
+    Value val -> mkThunk $ Value val
     a         -> a
 
 lazifyValue :: JsValue -> JsValue

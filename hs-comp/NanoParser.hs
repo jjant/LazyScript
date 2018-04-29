@@ -115,6 +115,17 @@ parseJsValue =
 spread :: Parser JsExpression
 spread = Spread <$> (string "..." >> parseJsExpression)
 
+parseFunc :: Parser JsExpression
+parseFunc = do
+  char '('
+  paramNames <- varName `sepBy` (char ',')
+  char ')'
+  string "=>"
+  char '{'
+  exps <- parseJsExpression `sepBy` (char '\n') 
+  char '}'
+  return $ JsFunc paramNames exps
+
 parseFuncCall :: Parser JsExpression
 parseFuncCall = do
   funcName <- varName
@@ -140,6 +151,7 @@ data JsExpression =
   Value JsValue
   | Spread JsExpression
   | JsFuncCall String [JsValue]
+  | JsFunc [String] [JsExpression]
   deriving (Show)
 
 
@@ -149,6 +161,9 @@ objString = "{hola:{}}"
 arrayString :: String
 arrayString = "[...a(),1,2,3]"
 
+funcString :: String
+funcString = "(a)=>{2}"
 main = do
   putStrLn $ show (runParser parseJsExpression objString)
   putStrLn $ show (runParser parseArray arrayString)
+  putStrLn $ show (runParser parseFunc funcString)
