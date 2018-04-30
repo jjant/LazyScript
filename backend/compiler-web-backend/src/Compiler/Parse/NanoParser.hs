@@ -1,3 +1,4 @@
+-- TODO: This module needs to be completely overhauled (js parsing)
 module Compiler.Parse.NanoParser where
 
 import Compiler.Parse.Primitives.Internals
@@ -25,7 +26,7 @@ alphaNum :: Parser Char
 alphaNum = digit <|> alpha
 
 varName :: Parser [Char]
-varName = many alpha
+varName = some alpha
 
 parseNumber :: Parser JsValue
 parseNumber = (JsNumber . read <$> some digit)
@@ -118,9 +119,8 @@ arrayString = "[...a(),1,2,3]"
 
 funcString :: String
 funcString = "(a)=>{2}"
-
-runModule :: Text -> Text
-runModule s =
-  s <> "\n" <> show (runParser parseJsExpression objString) <>
-  show (runParser parseArray arrayString) <>
-  show (runParser parseFunc funcString)
+-- runModule :: Text -> Text
+-- runModule s =
+--   s <> "\n" <> show (runParser parseJsExpression objString) <>
+--   show (runParser parseArray arrayString) <>
+--   show (runParser parseFunc funcString)
