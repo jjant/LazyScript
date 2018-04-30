@@ -1,7 +1,7 @@
 module LazyArray where
 
-import           Data.List
-import           NanoParser (parseArray, runParser, JsValue(..), JsExpression(..))
+import Data.List
+import NanoParser (JsExpression(..), JsValue(..), parseArray, runParser)
 
 --makeLazy :: Expression -> Expression
 --makeLazy (Spread exp) = FuncCall exp
@@ -10,7 +10,6 @@ import           NanoParser (parseArray, runParser, JsValue(..), JsExpression(..
 --makeLazy (ArrayExpression (x:xs)) =
 --  ArrayExpression ([makeLazy x, Thunk (makeLazy (ArrayExpression xs))])
 --makeLazy e = e
-
 --toJS :: Expression -> String
 --toJS (ArrayExpression []) = "[]"
 --toJS (ArrayExpression xs) =
@@ -21,7 +20,6 @@ import           NanoParser (parseArray, runParser, JsValue(..), JsExpression(..
 --toJS (Identifier ident) = ident
 --toJS (Thunk exp) = "() => { return " ++ (toJS exp) ++ "; }"
 --toJS (NoOp) = ""
-
 --declToJS :: Declaration -> String
 --declToJS (Const s exp) = "const " ++ s ++ " = " ++ (toJS exp)
 --
@@ -32,7 +30,6 @@ import           NanoParser (parseArray, runParser, JsValue(..), JsExpression(..
 --testCases :: String
 --testCases =
 --  "console.log(access(10, a).toString() + ' === 2');\nconsole.log(access(0, a).toString() + ' === 1');"
-
 mkThunk :: JsExpression -> JsExpression
 mkThunk val = JsFunc [] [val]
 
@@ -40,18 +37,17 @@ lazifyExpression :: JsExpression -> JsExpression
 lazifyExpression exp =
   case exp of
     Value val -> mkThunk $ Value val
-    a         -> a
+    a -> a
 
 lazifyValue :: JsValue -> JsValue
 lazifyValue = id
-
 
 main
   -- putStrLn ("Array "  ++ (show anArray))
   -- putStrLn ("Lazy " ++ (show (makeLazy anArray)))
   -- putStrLn $ "const b = " ++ toJS anArray
  = do
-  parsedArray <- (runParser parseArray) <$>getLine
+  parsedArray <- (runParser parseArray) <$> getLine
   putStrLn (show parsedArray)
   -- putStrLn $ "const a = () => " ++ (toJS . makeLazy) anArray
   -- putStrLn $ accessFunc

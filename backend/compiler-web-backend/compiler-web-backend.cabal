@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 83b9793a50f70ed820155d69650754f60e534a0fd40ae1050f1c0bd353ceaca3
+-- hash: fa459e182db771ba2800a8ca4935c6845c11729cbd25eec65f3c129d9d02eefb
 
 name:           compiler-web-backend
 version:        0.1.0.0
@@ -30,6 +30,11 @@ library
       src
   build-depends:
       base >=4.7 && <5
+  exposed-modules:
+      Compiler.Compiler
+      Compiler.Parse.Keyword
+      Compiler.Parse.NanoParser
+      Compiler.Parse.Primitives.Internals
   other-modules:
       Paths_compiler_web_backend
   default-language: Haskell2010

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import Web.Spock
@@ -8,8 +9,13 @@ import Web.Spock.Config
 import Data.IORef
 import Data.Text (Text)
 
-data MySession = EmptySession
-data MyAppState = DummyAppState (IORef Int)
+import Compiler.Compiler (compiler)
+
+data MySession =
+  EmptySession
+
+data MyAppState =
+  DummyAppState (IORef Int)
 
 main :: IO ()
 main = do
@@ -28,6 +34,6 @@ app = do
       Just compiledCode -> text compiledCode
       Nothing -> text "ERROR: code query param missing."
 
-compileCode :: Text -> Text
-compileCode _ =
-  "const a = () => [1, () => a()];"
+-- compileCode :: Text -> Text
+-- compileCode _ = "const a = () => [1, () => a()];"
+compileCode = compiler
