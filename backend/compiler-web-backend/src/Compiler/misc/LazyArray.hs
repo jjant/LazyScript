@@ -1,7 +1,7 @@
 module LazyArray where
 
 import Data.List
-import NanoParser (JsExpression(..), JsValue(..), parseArray, runParser)
+import Parser (JsExpression(..), JsValue(..), parseArray, runParser)
 
 --makeLazy :: Expression -> Expression
 --makeLazy (Spread exp) = FuncCall exp

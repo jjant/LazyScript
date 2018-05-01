@@ -2,7 +2,7 @@
 module Compiler.Parse.Functions where
 
 import Compiler.Parse.Keyword (function_)
-import Compiler.Parse.NanoParser (sepBy, varName)
+import Compiler.Parse.Parser (sepBy, varName)
 import Compiler.Parse.Primitives.Internals (Parser, char, string)
 
 -- TODO: Change later
@@ -10,7 +10,13 @@ data Func = Func
   { identifier :: String
   , formalParameters :: [String]
   , body :: [String]
+  -- , env :: [...] TODO: Think this through.
   } deriving (Show, Eq)
+
+data ArrowFunc = ArrowFunc
+  { formalParameters :: [String]
+  , body :: [String]
+  } deriving (Eq, Show)
 
 -- Function definitions
 -- functionDefinition = do
@@ -46,3 +52,9 @@ functionBody = do
   xs <- return []
   char '}'
   return xs
+
+arrowFunction :: Parser Func
+arrowFunction = do
+  params <- arrowParameters
+  body <- functionBody -- TODO: Handle concise body
+  return ArrowFunc {formalParameters = params, body = body}

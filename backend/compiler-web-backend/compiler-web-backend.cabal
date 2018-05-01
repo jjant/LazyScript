@@ -33,7 +33,7 @@ library
   exposed-modules:
       Compiler.Compiler
       Compiler.Parse.Keyword
-      Compiler.Parse.NanoParser
+      Compiler.Parse.Parser
       Compiler.Parse.Primitives.Internals
   other-modules:
       Paths_compiler_web_backend

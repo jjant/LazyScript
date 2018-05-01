@@ -2,6 +2,16 @@
 
 LazyScript is a dynamic, lazily evaluated programming language featuring pure IO.
 
+## Examples
+
+```javascript
+const infinite = [1, 2, ...infinite];
+
+const greetIndefinitely = infinite.map(_ => IO.putStrLn('Hi!'));
+
+const main = constantlyGreet;
+```
+
 ## Usage
 
 ```bash

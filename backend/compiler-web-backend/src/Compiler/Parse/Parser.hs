@@ -1,5 +1,5 @@
 -- TODO: This module needs to be completely overhauled (js parsing)
-module Compiler.Parse.NanoParser where
+module Compiler.Parse.Parser where
 
 import Compiler.Parse.Primitives.Internals
 import Control.Applicative
@@ -87,6 +87,7 @@ parseFuncCall = do
 parseJsExpression :: Parser JsExpression
 parseJsExpression = (Value <$> parseJsValue) <|> spread <|> parseFuncCall
 
+-- TODO: Stuff below this should be removed.
 data JsValue
   = JsNumber Int
   | JsString String
@@ -102,14 +103,6 @@ data JsExpression
   | JsFunc [String]
            [JsExpression]
   deriving (Show)
-
-data JavaScriptValue
-  = Number Int
-  | String String
-  | Char Char
-  | Bool Bool
-  | Object [(String, JavaScriptValue)]
-  | Array [JavaScriptValue]
 
 objString :: String
 objString = "{hola:{}}"
